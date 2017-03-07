@@ -2,18 +2,19 @@ sudo: false
 language: php
 php:
 - 7.0
+- 7.1
 branches:
   only:
   - master
 cache:
   directories:
-  - "$HOME/.composer/cache/files"
+  - $HOME/.composer/cache/files
 install:
 - mv /home/travis/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini ~/xdebug.ini
-- composer install --no-interaction --prefer-dist --no-progress --quiet
+- composer update --prefer-dist
 - mv ~/xdebug.ini /home/travis/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini
 script:
-- phpunit --coverage-clover build/logs/clover.xml
+- vendor/phpunit/phpunit/phpunit --coverage-clover build/logs/clover.xml
 after_success:
 - bash .travis_docgen.sh
 addons:
