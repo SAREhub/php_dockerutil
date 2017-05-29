@@ -1,6 +1,6 @@
 #!/bin/bash
 
-REPOSITORY_ID='SAREhub/php_docker_worker_component'
+REPOSITORY_ID='SAREhub/php_dockerutil'
 
 if [ "$TRAVIS_REPO_SLUG" == "$REPOSITORY_ID" ] && [ $TRAVIS_BRANCH = 'master' ] && [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$TRAVIS_PHP_VERSION" == "7.0" ]; then
     wget http://www.apigen.org/apigen.phar
