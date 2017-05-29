@@ -14,10 +14,12 @@ class WorkerRunnerTest extends TestCase {
 	 * @var Mock | mixed
 	 */
 	private $worker;
+	
 	/**
 	 * @var PcntlSignals
 	 */
 	private $signals;
+	
 	/**
 	 * @var WorkerRunner
 	 */

@@ -9,6 +9,9 @@ use SAREhub\Commons\Process\PcntlSignals;
  */
 class WorkerRunner {
 	
+	/**
+	 * @var Worker
+	 */
 	private $worker;
 	
 	/**
@@ -16,7 +19,7 @@ class WorkerRunner {
 	 */
 	private $signals;
 	
-	private function __construct(Worker $worker, PcntlSignals $signals) {
+	public function __construct(Worker $worker, PcntlSignals $signals) {
 		$this->worker = $worker;
 		$this->signals = $signals;
 		$this->installSignals();
@@ -24,7 +27,7 @@ class WorkerRunner {
 	
 	private function installSignals() {
 		$callback = function () { $this->stop(); };
-		$this->signals->handle(PcntlSignals::SIGTERM, $callback);
+		$this->getSignals()->handle(PcntlSignals::SIGTERM, $callback);
 	}
 	
 	public static function create(Worker $worker, PcntlSignals $signals): WorkerRunner {
@@ -37,9 +40,13 @@ class WorkerRunner {
 	public function run() {
 		$this->getWorker()->start();
 		while ($this->getWorker()->isRunning()) {
-			$this->signals->checkPendingSignals();
-			$this->getWorker()->tick();
+			$this->tick();
 		}
+	}
+	
+	private function tick() {
+		$this->getSignals()->checkPendingSignals();
+		$this->getWorker()->tick();
 	}
 	
 	private function stop() {
@@ -48,5 +55,9 @@ class WorkerRunner {
 	
 	private function getWorker(): Worker {
 		return $this->worker;
+	}
+	
+	private function getSignals(): PcntlSignals {
+		return $this->signals;
 	}
 }
