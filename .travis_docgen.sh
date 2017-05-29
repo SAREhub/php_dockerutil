@@ -1,4 +1,7 @@
 #!/bin/bash
+exit # wait for new apigen version
+
+
 # repo name
 REPOSITORY_ID='SAREhub/php_dockerutil'
 
