@@ -12,7 +12,7 @@
     "phpunit/phpunit": "6.*",
     "mockery/mockery": "0.9.*",
     "codeclimate/php-test-reporter": "0.4.*",
-    "fig-r/psr2r-sniffer": "0.3.*"
+    "mikey179/vfsStream": "1.6.*"
   },
   "require": {
     "php": "^7.0",
@@ -22,5 +22,8 @@
     "psr-4": {
       "SAREhub\\": "src/SAREhub"
     }
-  }
+  },
+  "bin": [
+    "bin/build_image.sh"
+  ]
 }
