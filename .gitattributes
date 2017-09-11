@@ -6,3 +6,4 @@
 /.codeclimate.yml export-ignore
 /.travis_docgen.sh export-ignore
 /phpmd-ruleset.xml export-ignore
+* text=auto eol=lf
