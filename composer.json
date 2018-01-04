@@ -15,7 +15,7 @@
     "mikey179/vfsStream": "1.6.*"
   },
   "require": {
-    "php": "^7.0",
+    "php": "^7.1",
     "sarehub/commons": "0.7.*"
   },
   "autoload": {
