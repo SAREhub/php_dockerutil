@@ -16,7 +16,7 @@
   },
   "require": {
     "php": "^7.0",
-    "sarehub/commons": "0.6.*"
+    "sarehub/commons": "0.7.*"
   },
   "autoload": {
     "psr-4": {
