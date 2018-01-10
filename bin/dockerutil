@@ -121,7 +121,7 @@ function dockerutil::create_secret_if_not_exists {
     local name=$1
     local value=$2
 
-    if ! $(dockerutil_secret_exists $name); then
+    if ! $(dockerutil::secret_exists $name); then
         echo $value | docker secret create $name -
         dockerutil::print_success "secret $name created"
     else
@@ -140,12 +140,12 @@ function dockerutil::get_container_file_contents {
     local container=$1
     local filename=$2
 
-    if [ ! $(dockerutil_exec_command $container "[ -f $filename ] && echo "1" || echo ''") ]; then
+    if [ ! $(dockerutil::exec_command_in_container $container "[ -f $filename ] && echo "1" || echo ''") ]; then
         dockerutil::print_error "file: $filename in container not exists"
         return 1
     fi
 
-    echo $(dockerutil_exec_command $container "cat $filename")
+    echo $(dockerutil::exec_command_in_container $container "cat $filename")
 }
 
 function dockerutil::get_service_container {
