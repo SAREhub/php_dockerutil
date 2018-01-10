@@ -12,30 +12,30 @@ readonly DOCKERUTIL_TAN=$(tput setaf 3)
 readonly DOCKERUTIL_BLUE=$(tput setaf 38)
 
 # LOGGING:
-dockerutil::print_header() {
+function dockerutil::print_header() {
     printf "\n${DOCKERUTIL_BOLD}${DOCKERUTIL_PURPLE}==========  %s  ==========${DOCKERUTIL_RESET}\n" "$@" 1>&2
 }
 
-dockerutil::print_arrow() {
+function dockerutil::print_arrow() {
     printf "➜ $@\n" 1>&2
 }
 
-dockerutil::print_success() {
+function dockerutil::print_success() {
     printf "${DOCKERUTIL_GREEN}✔ %s${DOCKERUTIL_RESET}\n" "$@" 1>&2
 }
 
-dockerutil::print_error() {
+function dockerutil::print_error() {
     printf "${DOCKERUTIL_RED}✖ %s${DOCKERUTIL_RESET}\n" "$@" 1>&2
 }
 
-dockerutil::print_warning() {
+function dockerutil::print_warning() {
     printf "${DOCKERUTIL_TAN}➜ %s${DOCKERUTIL_RESET}\n" "$@" 1>&2
 }
 
-dockerutil::print_underline() {
+function dockerutil::print_underline() {
     printf "${DOCKERUTIL_UNDERLINE}${DOCKERUTIL_BOLD}%s${DOCKERUTIL_RESET}\n" "$@" 1>&2
 }
-dockerutil::print_bold() {
+function dockerutil::print_bold() {
     printf "${DOCKERUTIL_BOLD}%s${DOCKERUTIL_RESET}\n" "$@"
 }
 dockerutil::print_note() {
@@ -121,7 +121,7 @@ function dockerutil::create_secret_if_not_exists {
     local name=$1
     local value=$2
 
-    if ! $(dockerutil_secret_exists $name); then
+    if ! $(dockerutil::secret_exists $name); then
         echo $value | docker secret create $name -
         dockerutil::print_success "secret $name created"
     else
@@ -140,12 +140,12 @@ function dockerutil::get_container_file_contents {
     local container=$1
     local filename=$2
 
-    if [ ! $(dockerutil_exec_command $container "[ -f $filename ] && echo "1" || echo ''") ]; then
+    if [ ! $(dockerutil::exec_command_in_container $container "[ -f $filename ] && echo "1" || echo ''") ]; then
         dockerutil::print_error "file: $filename in container not exists"
         return 1
     fi
 
-    echo $(dockerutil_exec_command $container "cat $filename")
+    echo $(dockerutil::exec_command_in_container $container "cat $filename")
 }
 
 function dockerutil::get_service_container {
