@@ -1,0 +1,172 @@
+#!/usr/bin/env bash
+
+# CONSTANTS:
+readonly BOLD=$(tput bold)
+readonly UNDERLINE=$(tput sgr 0 1)
+readonly RESET=$(tput sgr0)
+
+readonly PURPLE=$(tput setaf 171)
+readonly RED=$(tput setaf 1)
+readonly GREEN=$(tput setaf 76)
+readonly TAN=$(tput setaf 3)
+readonly BLUE=$(tput setaf 38)
+
+# LOGGING:
+dockerutil::print_header() {
+    printf "\n${BOLD}${PURPLE}==========  %s  ==========${RESET}\n" "$@" 1>&2
+}
+
+dockerutil::print_arrow() {
+    printf "➜ $@\n" 1>&2
+}
+
+dockerutil::print_success() {
+    printf "${GREEN}✔ %s${RESET}\n" "$@" 1>&2
+}
+
+dockerutil::print_error() {
+    printf "${RED}✖ %s${RESET}\n" "$@" 1>&2
+}
+
+dockerutil::print_warning() {
+    printf "${TAN}➜ %s${RESET}\n" "$@" 1>&2
+}
+
+dockerutil::print_underline() {
+    printf "${UNDERLINE}${BOLD}%s${RESET}\n" "$@" 1>&2
+}
+dockerutil::print_bold() {
+    printf "${BOLD}%s${RESET}\n" "$@"
+}
+dockerutil::print_note() {
+    printf "${UNDERLINE}${BOLD}${BLUE}Note:${RESET}  ${BLUE}%s${RESET}\n" "$@" 1>&2
+}
+
+function dockerutil::is_cygwin_env() {
+    [ $(uname -s) == 'CYGWIN'* ] && echo 1
+}
+
+function dockerutil::pwd() {
+    local ret=$PWD
+
+    # check for cygwin users(on windows)
+    if $(dockerutil::is_cygwin_env); then
+        # for windows users you must sets shared folder on projects
+        # help: https://gist.github.com/matthiasg/76dd03926d095db08745
+        local shared_dir=${DOCKER_SHARED_PROJECT_DIR:-'//home/docker/projects'}
+        # replaced projects root dir with shared dir
+        ret="${shared_dir}/$(basename $PWD)"
+    fi
+
+    echo $ret
+}
+
+#######################################
+# Returns true when service with given name exists
+# Globals:
+#   None
+# Arguments:
+#   service_name
+# Returns:
+#   not empty when exists
+#######################################
+function dockerutil::service_exists {
+    local exists=$(docker service ls -q -f "name=${1}")
+    [ ! -z "$exists" ]
+}
+
+#######################################
+# Returns true when service with given name exists
+# Globals:
+#   None
+# Arguments:
+#  label
+# Returns:
+#   None
+#######################################
+function dockerutil::clean_all_with_label() {
+    local label=$1
+
+    for type in 'service' 'secret' 'volume' 'network' 'config'
+    do
+        dockerutil::print_header "CLEANING ENTITIES WITH LABEL: $label"
+        dockerutil::print_arrow "removing ${type}s"
+        docker $type ls -qf "label=$label" | xargs --no-run-if-empty docker $type rm
+        dockerutil::print_success "removed ${type}s"
+        sleep 3
+    done
+}
+
+#######################################
+# Returns true when network with given name exists
+# Globals:
+#   None
+# Arguments:
+#   service_name
+# Returns:
+#   bool
+#######################################
+function dockerutil::network_exists {
+    local exists=$(docker network ls -q -f "name=${1}\$")
+    [ ! -z "$exists" ]
+}
+
+function dockerutil::secret_exists {
+    local exists=$(docker secret ls -q -f "name=${1}")
+    [ "$exists" != '' ]
+}
+
+function dockerutil::create_secret_if_not_exists {
+    local name=$1
+    local value=$2
+
+    if ! $(dockerutil_secret_exists $name); then
+        echo $value | docker secret create $name -
+        dockerutil::print_success "secret $name created"
+    else
+        dockerutil::print_warning "secret $name exists"
+    fi
+}
+
+function dockerutil::exec_command_in_container {
+    local container=$1
+    local command=$2
+
+    echo $(docker exec $container /bin/sh -c "$command")
+}
+
+function dockerutil::get_container_file_contents {
+    local container=$1
+    local filename=$2
+
+    if [ ! $(dockerutil_exec_command $container "[ -f $filename ] && echo "1" || echo ''") ]; then
+        dockerutil::print_error "file: $filename in container not exists"
+        return 1
+    fi
+
+    echo $(dockerutil_exec_command $container "cat $filename")
+}
+
+function dockerutil::get_service_container {
+    local service_name=$1
+
+    local service_filter="label=com.docker.swarm.service.name=$service_name"
+    while [ ! "$(docker ps -f "$service_filter" -f "status=running" -q)" ];
+    do
+        dockerutil::print_note "waiting for container of $service_name service"
+        sleep 2
+    done
+    echo $(docker ps -f "$service_filter" -q)
+}
+
+function dockerutil::composer_install {
+    local install_dir=$1
+    local user=$2
+
+    docker run \
+      --rm \
+      --interactive --tty \
+      --volume "$install_dir":/app \
+      --user $(id -u $user):$(id -g $user) \
+      composer install --no-dev --optimize-autoloader --prefer-dist --no-suggest --ignore-platform-reqs
+}
