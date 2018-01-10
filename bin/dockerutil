@@ -12,30 +12,30 @@ readonly DOCKERUTIL_TAN=$(tput setaf 3)
 readonly DOCKERUTIL_BLUE=$(tput setaf 38)
 
 # LOGGING:
-dockerutil::print_header() {
+function dockerutil::print_header() {
     printf "\n${DOCKERUTIL_BOLD}${DOCKERUTIL_PURPLE}==========  %s  ==========${DOCKERUTIL_RESET}\n" "$@" 1>&2
 }
 
-dockerutil::print_arrow() {
+function dockerutil::print_arrow() {
     printf "➜ $@\n" 1>&2
 }
 
-dockerutil::print_success() {
+function dockerutil::print_success() {
     printf "${DOCKERUTIL_GREEN}✔ %s${DOCKERUTIL_RESET}\n" "$@" 1>&2
 }
 
-dockerutil::print_error() {
+function dockerutil::print_error() {
     printf "${DOCKERUTIL_RED}✖ %s${DOCKERUTIL_RESET}\n" "$@" 1>&2
 }
 
-dockerutil::print_warning() {
+function dockerutil::print_warning() {
     printf "${DOCKERUTIL_TAN}➜ %s${DOCKERUTIL_RESET}\n" "$@" 1>&2
 }
 
-dockerutil::print_underline() {
+function dockerutil::print_underline() {
     printf "${DOCKERUTIL_UNDERLINE}${DOCKERUTIL_BOLD}%s${DOCKERUTIL_RESET}\n" "$@" 1>&2
 }
-dockerutil::print_bold() {
+function dockerutil::print_bold() {
     printf "${DOCKERUTIL_BOLD}%s${DOCKERUTIL_RESET}\n" "$@"
 }
 dockerutil::print_note() {
