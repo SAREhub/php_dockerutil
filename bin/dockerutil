@@ -1,19 +1,19 @@
 #!/usr/bin/env bash
 
 # CONSTANTS:
-readonly BOLD=$(tput bold)
-readonly UNDERLINE=$(tput sgr 0 1)
-readonly RESET=$(tput sgr0)
+readonly DOCKERUTIL_BOLD=$(tput bold)
+readonly DOCKERUTIL_UNDERLINE=$(tput sgr 0 1)
+readonly DOCKERUTIL_RESET=$(tput sgr0)
 
-readonly PURPLE=$(tput setaf 171)
-readonly RED=$(tput setaf 1)
-readonly GREEN=$(tput setaf 76)
-readonly TAN=$(tput setaf 3)
-readonly BLUE=$(tput setaf 38)
+readonly DOCKERUTIL_PURPLE=$(tput setaf 171)
+readonly DOCKERUTIL_RED=$(tput setaf 1)
+readonly DOCKERUTIL_GREEN=$(tput setaf 76)
+readonly DOCKERUTIL_TAN=$(tput setaf 3)
+readonly DOCKERUTIL_BLUE=$(tput setaf 38)
 
 # LOGGING:
 dockerutil::print_header() {
-    printf "\n${BOLD}${PURPLE}==========  %s  ==========${RESET}\n" "$@" 1>&2
+    printf "\n${DOCKERUTIL_BOLD}${DOCKERUTIL_PURPLE}==========  %s  ==========${DOCKERUTIL_RESET}\n" "$@" 1>&2
 }
 
 dockerutil::print_arrow() {
@@ -21,25 +21,25 @@ dockerutil::print_arrow() {
 }
 
 dockerutil::print_success() {
-    printf "${GREEN}✔ %s${RESET}\n" "$@" 1>&2
+    printf "${DOCKERUTIL_GREEN}✔ %s${DOCKERUTIL_RESET}\n" "$@" 1>&2
 }
 
 dockerutil::print_error() {
-    printf "${RED}✖ %s${RESET}\n" "$@" 1>&2
+    printf "${DOCKERUTIL_RED}✖ %s${DOCKERUTIL_RESET}\n" "$@" 1>&2
 }
 
 dockerutil::print_warning() {
-    printf "${TAN}➜ %s${RESET}\n" "$@" 1>&2
+    printf "${DOCKERUTIL_TAN}➜ %s${DOCKERUTIL_RESET}\n" "$@" 1>&2
 }
 
 dockerutil::print_underline() {
-    printf "${UNDERLINE}${BOLD}%s${RESET}\n" "$@" 1>&2
+    printf "${DOCKERUTIL_UNDERLINE}${DOCKERUTIL_BOLD}%s${DOCKERUTIL_RESET}\n" "$@" 1>&2
 }
 dockerutil::print_bold() {
-    printf "${BOLD}%s${RESET}\n" "$@"
+    printf "${DOCKERUTIL_BOLD}%s${DOCKERUTIL_RESET}\n" "$@"
 }
 dockerutil::print_note() {
-    printf "${UNDERLINE}${BOLD}${BLUE}Note:${RESET}  ${BLUE}%s${RESET}\n" "$@" 1>&2
+    printf "${DOCKERUTIL_UNDERLINE}${DOCKERUTIL_BOLD}${DOCKERUTIL_BLUE}Note:${DOCKERUTIL_RESET}  ${DOCKERUTIL_BLUE}%s${DOCKERUTIL_RESET}\n" "$@" 1>&2
 }
 
 function dockerutil::is_cygwin_env() {
@@ -87,9 +87,10 @@ function dockerutil::service_exists {
 function dockerutil::clean_all_with_label() {
     local label=$1
 
+    dockerutil::print_header "CLEANING ENTITIES WITH LABEL: $label"
+
     for type in 'service' 'secret' 'volume' 'network' 'config'
     do
-        dockerutil::print_header "CLEANING ENTITIES WITH LABEL: $label"
         dockerutil::print_arrow "removing ${type}s"
         docker $type ls -qf "label=$label" | xargs --no-run-if-empty docker $type rm
         dockerutil::print_success "removed ${type}s"
