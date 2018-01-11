@@ -26,6 +26,9 @@ dockerutil::print_bold "text"
 echo "#print_note(): "
 dockerutil::print_note "text"
 
+echo "#is_cygwin_env():"
+$(dockerutil::is_cygwin_env) && echo 'true' || echo 'false'
+
 echo "#pwd():"
 dockerutil::pwd
 

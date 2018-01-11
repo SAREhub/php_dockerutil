@@ -43,7 +43,7 @@ dockerutil::print_note() {
 }
 
 function dockerutil::is_cygwin_env() {
-    [ $(uname -s) == 'CYGWIN'* ] && echo 1
+    [[ $(uname -s) == 'CYGWIN'* ]]
 }
 
 function dockerutil::pwd() {
