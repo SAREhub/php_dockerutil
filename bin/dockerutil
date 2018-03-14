@@ -93,7 +93,7 @@ function dockerutil::clean_all_with_label() {
     do
         dockerutil::print_arrow "removing ${type}s"
         entities=$(docker $type ls -qf "label=$label")
-        if [ -z "$entities" ]; then
+        if [ -n "$entities" ]; then
             docker $type ls -qf "label=$label" | xargs docker $type rm
         fi
         dockerutil::print_success "removed ${type}s"
