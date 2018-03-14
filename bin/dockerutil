@@ -92,7 +92,10 @@ function dockerutil::clean_all_with_label() {
     for type in 'service' 'secret' 'volume' 'network' 'config'
     do
         dockerutil::print_arrow "removing ${type}s"
-        docker $type ls -qf "label=$label" | xargs --no-run-if-empty docker $type rm
+        entities=$(docker $type ls -qf "label=$label")
+        if [ -z "$entities" ]; then
+            docker $type ls -qf "label=$label" | xargs docker $type rm
+        fi
         dockerutil::print_success "removed ${type}s"
         sleep 3
     done
