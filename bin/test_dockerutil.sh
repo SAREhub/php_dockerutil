@@ -32,6 +32,9 @@ $(dockerutil::is_cygwin_env) && echo 'true' || echo 'false'
 echo "#pwd():"
 dockerutil::pwd
 
+echo "#get_docker_shared_project_dir():"
+dockerutil::get_docker_shared_project_dir
+
 
 
 

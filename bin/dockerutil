@@ -46,7 +46,7 @@ function dockerutil::is_cygwin_env() {
     [[ $(uname -s) == 'CYGWIN'* ]]
 }
 
-function dockerutil::pwd() {
+function dockerutil::get_docker_shared_project_dir() {
     local ret=$PWD
 
     # check for cygwin users(on windows)
@@ -56,6 +56,17 @@ function dockerutil::pwd() {
         local shared_dir=${DOCKER_SHARED_PROJECT_DIR:-'//home/docker/projects'}
         # replaced projects root dir with shared dir
         ret="${shared_dir}/$(basename $PWD)"
+    fi
+
+    echo $ret
+}
+
+function dockerutil::pwd() {
+    local ret=$PWD
+
+    # check for cygwin users(on windows)
+    if $(dockerutil::is_cygwin_env); then
+       ret=$(cygpath -w "$PWD")
     fi
 
     echo $ret
