@@ -97,6 +97,7 @@ function dockerutil::service_exists {
 #######################################
 function dockerutil::clean_all_with_label() {
     local label=$1
+    local sleep_time=${2:-3}
 
     dockerutil::print_header "CLEANING ENTITIES WITH LABEL: $label"
 
@@ -106,10 +107,14 @@ function dockerutil::clean_all_with_label() {
         entities=$(docker $type ls -qf "label=$label")
         if [ -n "$entities" ]; then
             docker $type ls -qf "label=$label" | xargs docker $type rm
+            sleep $sleep_time
         fi
-        dockerutil::print_success "removed ${type}s"
-        sleep 3
     done
+}
+
+function dockerutil::remove_entity() {
+    local type=$1
+    local id=$2
 }
 
 #######################################

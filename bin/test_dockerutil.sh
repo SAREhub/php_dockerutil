@@ -2,39 +2,40 @@
 
 . ./bin/dockerutil
 
-echo "#print_header(): "
-dockerutil::print_header "text"
 
-echo "#print_arrow(): "
+dockerutil::print_header "print_arrow()"
 dockerutil::print_arrow "text"
 
-echo "#print_success(): "
+dockerutil::print_header "print_success()"
 dockerutil::print_success "text"
 
-echo "#print_error(): "
+dockerutil::print_header  "print_error()"
 dockerutil::print_error "text"
 
-echo "#print_warning(): "
+dockerutil::print_header "print_warning()"
 dockerutil::print_warning "text"
 
-echo "#print_underline(): "
+dockerutil::print_header "print_underline()"
 dockerutil::print_underline "text"
 
-echo "#print_bold(): "
+dockerutil::print_header "print_bold()"
 dockerutil::print_bold "text"
 
-echo "#print_note(): "
+dockerutil::print_header "print_note()"
 dockerutil::print_note "text"
 
-echo "#is_cygwin_env():"
+dockerutil::print_header "is_cygwin_env()"
 $(dockerutil::is_cygwin_env) && echo 'true' || echo 'false'
 
-echo "#pwd():"
+dockerutil::print_header "pwd()"
 dockerutil::pwd
 
-echo "#get_docker_shared_project_dir():"
+dockerutil::print_header "get_docker_shared_project_dir()"
 dockerutil::get_docker_shared_project_dir
 
-
+dockerutil::print_header "dockerutil::clean_all_with_label()"
+test_label="dockerutil_testenv"
+docker service create --name "dockerutil_test_service" --label $test_label nginx:alpine
+dockerutil::clean_all_with_label $test_label 2
 
 
