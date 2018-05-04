@@ -4,32 +4,57 @@
 namespace SAREhub\DockerUtil\Worker;
 
 use Psr\Container\ContainerInterface;
-use SAREhub\Commons\Logger\LoggerFactory;
-use SAREhub\Commons\Process\PcntlSignals;
+use SAREhub\DockerUtil\Container\ContainerFactory;
 
 class WorkerBootstrap
 {
-    public static function runFor(string $workerClass, ContainerInterface $container)
-    {
-        $loggerFactory = $container->get(LoggerFactory::class);
-        $logger = $loggerFactory->create("main");
-        try {
-            $worker = self::createWorker($workerClass, $container);
-            $worker->setLogger($loggerFactory->create($workerClass));
+    const ERROR_EXIT_CODE = 1;
 
-            $runner = new WorkerRunner($worker, new PcntlSignals());
+    /**
+     * @var ContainerFactory
+     */
+    private $containerFactory;
+
+    /**
+     * @var UnexpectedErrorHandler
+     */
+    private $errorHandler;
+
+    /**
+     * @param ContainerFactory $containerFactory
+     * @param UnexpectedErrorHandler $errorHandler
+     */
+    public function __construct(ContainerFactory $containerFactory, UnexpectedErrorHandler $errorHandler)
+    {
+        $this->containerFactory = $containerFactory;
+        $this->errorHandler = $errorHandler;
+    }
+
+    public static function create(ContainerFactory $containerFactory, UnexpectedErrorHandler $errorHandler): self
+    {
+        return new self($containerFactory, $errorHandler);
+    }
+
+    /**
+     * Creates container and gets WorkerRunner then run
+     * Handles unexpected errors
+     */
+    public function run()
+    {
+        try {
+            $container = $this->containerFactory->create();
+            $runner = $container->get(WorkerRunner::class);
             $runner->run();
         } catch (\Throwable $e) {
-            $logger->critical("Exception outside runner: " . $e->getMessage(), [
-                "exception" => $e
-            ]);
-
-            exit(1);
+            $this->handleUnexpectedError($e, $container ?? null);
         }
     }
 
-    protected static function createWorker(string $workerClass, ContainerInterface $container): Worker
+    private function handleUnexpectedError(\Throwable $e, ?ContainerInterface $container): void
     {
-        return new $workerClass($container);
+        $this->errorHandler->handle($e, $container);
+        exit(self::ERROR_EXIT_CODE);
     }
+
+
 }
