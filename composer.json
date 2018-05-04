@@ -25,7 +25,6 @@
     }
   },
   "bin": [
-    "bin/build_image.sh",
     "bin/dockerutil"
   ]
 }
