@@ -29,19 +29,15 @@ class WorkerRunner
 
     private function installSignals()
     {
-        $callback = function () {
-            $this->stop();
-        };
-        $this->getSignals()->handle(PcntlSignals::SIGTERM, $callback);
-    }
-
-    public static function create(Worker $worker, PcntlSignals $signals): WorkerRunner
-    {
-        return new self($worker, $signals);
+        $this->getSignals()->install(PcntlSignals::getDefaultInstalledSignals());
+        $handler = [$this, "stop"];
+        $this->getSignals()->handle(PcntlSignals::SIGINT, $handler);
+        $this->getSignals()->handle(PcntlSignals::SIGTERM, $handler);
     }
 
     /**
      * Starts worker and calls worker tick in loop until worker is running.
+     * @throws \Exception
      */
     public function run()
     {
@@ -51,13 +47,20 @@ class WorkerRunner
         }
     }
 
+    /**
+     * @throws \Exception
+     */
     private function tick()
     {
         $this->getSignals()->checkPendingSignals();
         $this->getWorker()->tick();
     }
 
-    private function stop()
+    /**
+     * @throws \Exception
+     * Internal use only
+     */
+    public function stop()
     {
         $this->getWorker()->stop();
     }

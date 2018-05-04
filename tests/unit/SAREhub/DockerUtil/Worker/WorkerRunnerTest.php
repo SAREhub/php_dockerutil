@@ -2,8 +2,9 @@
 
 namespace SAREhub\DockerUtil\Worker;
 
+use Hamcrest\Matchers;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
-use Mockery\Mock;
+use Mockery\MockInterface;
 use PHPUnit\Framework\TestCase;
 use SAREhub\Commons\Process\PcntlSignals;
 
@@ -12,12 +13,12 @@ class WorkerRunnerTest extends TestCase
     use MockeryPHPUnitIntegration;
 
     /**
-     * @var Mock | mixed
+     * @var MockInterface | Worker
      */
     private $worker;
 
     /**
-     * @var PcntlSignals
+     * @var PcntlSignals | MockInterface
      */
     private $signals;
 
@@ -29,41 +30,55 @@ class WorkerRunnerTest extends TestCase
     protected function setUp()
     {
         $this->worker = \Mockery::mock(Worker::class)->shouldIgnoreMissing();
-        $this->signals = PcntlSignals::create(false);
-        $this->runner = WorkerRunner::create($this->worker, $this->signals);
+        $this->signals = \Mockery::mock(PcntlSignals::class)->shouldIgnoreMissing();
+        $this->runner = new WorkerRunner($this->worker, $this->signals);
     }
 
-    public function testCreateThenHasHandlerFor_SIGTERM()
+    public function testCreateThenRegisterSignalHandlers()
     {
-        $handler = $this->signals->getHandlersForSignal(PcntlSignals::SIGTERM)[PcntlSignals::DEFAULT_NAMESPACE];
-        $this->assertNotNull($handler);
+        $this->signals->expects("install")->withArgs([PcntlSignals::getDefaultInstalledSignals()]);
+        $this->signals->expects("handle")->withArgs([PcntlSignals::SIGINT, Matchers::callableValue()]);
+        $this->signals->expects("handle")->withArgs([PcntlSignals::SIGTERM, Matchers::callableValue()]);
+        new WorkerRunner($this->worker, $this->signals);
     }
 
-    public function testSIGTERM_ThenStop()
+    public function testRunWhenSIGINT()
     {
-        $this->worker->shouldReceive('stop')->once();
+        $this->signals = new PcntlSignals();
+        $this->runner = new WorkerRunner($this->worker, $this->signals);
+
+        $this->worker->expects("stop");
+
+        $this->signals->dispatchSignal(PcntlSignals::SIGINT);
+    }
+
+    public function testRunWhenSIGTERM()
+    {
+        $this->signals = new PcntlSignals();
+        $this->runner = new WorkerRunner($this->worker, $this->signals);
+
+        $this->worker->expects("stop");
+
         $this->signals->dispatchSignal(PcntlSignals::SIGTERM);
     }
 
-    public function testRunWhenWorkerRunningThenPcntlSignalsCheckPendingSignals()
+    public function testRunWhenWorkerRunningThenCheckPendingSignals()
     {
-        $this->signals = \Mockery::mock(PcntlSignals::class)->shouldIgnoreMissing();
-        $this->worker->shouldReceive('isRunning')->andReturnValues([true, true, false]);
-        $this->signals->shouldReceive('checkPendingSignals')->twice();
-        $this->runner = WorkerRunner::create($this->worker, $this->signals);
+        $this->worker->expects("isRunning")->times(2)->andReturnValues([true, false]);
+        $this->signals->expects("checkPendingSignals");
         $this->runner->run();
     }
 
     public function testRunThenWorkerStart()
     {
-        $this->worker->shouldReceive('start')->once();
+        $this->worker->expects("start");
         $this->runner->run();
     }
 
     public function testRunWhenWorkerIsRunningThenWorkerTickInLoop()
     {
-        $this->worker->shouldReceive('isRunning')->andReturnValues([true, true, false]);
-        $this->worker->shouldReceive('tick')->twice();
+        $this->worker->expects("isRunning")->times(2)->andReturnValues([true, false]);
+        $this->worker->expects("tick");
         $this->runner->run();
     }
 }
