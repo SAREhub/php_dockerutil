@@ -10,18 +10,25 @@
   ],
   "require-dev": {
     "phpunit/phpunit": "6.*",
-    "mockery/mockery": "1.0",
+    "mockery/mockery": "1.1.*",
     "codeclimate/php-test-reporter": "0.4.*",
-    "mikey179/vfsStream": "1.6.*"
+    "mikey179/vfsStream": "1.6.*",
+    "monolog/monolog": "1.23.*"
   },
   "require": {
     "php": "^7.1",
     "sarehub/commons": "0.7.*",
-    "psr/container": "1.0.0"
+    "psr/container": "1.*"
   },
   "autoload": {
     "psr-4": {
       "SAREhub\\": "src/SAREhub"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "SAREhub\\": "tests/SAREhub",
+      "SAREhub\\Example\\": "examples"
     }
   },
   "bin": [
