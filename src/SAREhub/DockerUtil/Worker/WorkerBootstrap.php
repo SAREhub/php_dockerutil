@@ -21,6 +21,11 @@ class WorkerBootstrap
     private $errorHandler;
 
     /**
+     * @var callable
+     */
+    private $unexpectedErrorExitFunction;
+
+    /**
      * @param ContainerFactory | string $containerFactory Object or class name
      * @param UnexpectedErrorHandler $errorHandler
      */
@@ -28,6 +33,12 @@ class WorkerBootstrap
     {
         $this->containerFactory = $containerFactory;
         $this->errorHandler = $errorHandler;
+        $this->unexpectedErrorExitFunction = "exit";
+    }
+
+    public function setUnexpectedErrorExitFunction(callable $function)
+    {
+        $this->unexpectedErrorExitFunction = $function;
     }
 
     /**
@@ -65,6 +76,6 @@ class WorkerBootstrap
     private function handleUnexpectedError(\Throwable $e, ?ContainerInterface $container): void
     {
         $this->errorHandler->handle($e, $container);
-        exit(self::ERROR_EXIT_CODE);
+        ($this->unexpectedErrorExitFunction)(self::ERROR_EXIT_CODE);
     }
 }
