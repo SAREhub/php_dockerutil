@@ -15,4 +15,4 @@ install:
 script:
 - vendor/phpunit/phpunit/phpunit --coverage-clover build/logs/clover.xml
 after_success:
-- bash .travis_docgen.sh
+#- bash .travis_docgen.sh
