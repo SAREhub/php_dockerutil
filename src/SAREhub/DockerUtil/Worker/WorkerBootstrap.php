@@ -33,7 +33,9 @@ class WorkerBootstrap
     {
         $this->containerFactory = $containerFactory;
         $this->errorHandler = $errorHandler;
-        $this->unexpectedErrorExitFunction = "exit";
+        $this->unexpectedErrorExitFunction = function () {
+            exit(1);
+        };
     }
 
     public function setUnexpectedErrorExitFunction(callable $function)
