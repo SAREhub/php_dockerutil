@@ -87,34 +87,52 @@ function dockerutil::service_exists {
 }
 
 #######################################
-# Returns true when service with given name exists
+# Removes docker entities with selected type and label
 # Globals:
 #   None
 # Arguments:
-#  label
+#  type - entity type: service, secret, volume, network, config
+#  label - entity label
+# Returns:
+#   None
+#######################################
+function dockerutil::remove_entities_with_label {
+    local type=$1
+    local label=$2
+    local entities=$(docker $type ls -qf "label=$label")
+    if [ -n "$entities" ]; then
+        docker "$type" ls -qf "label=$label" | xargs -I{} docker $type rm "{}"
+    fi
+}
+
+#######################################
+# Removes all docker entities with selected label
+# Globals:
+#   None
+# Arguments:
+#  label - entity label
+#  [sleep_time] - how long sleep after remove all entities of one type(some entities need some time to remove)
 # Returns:
 #   None
 #######################################
 function dockerutil::clean_all_with_label() {
     local label=$1
-    local sleep_time=${2:-3}
-
-    dockerutil::print_header "CLEANING ENTITIES WITH LABEL: $label"
-
+    local sleep_time=${2:-2}
+    dockerutil::print_header "Removing entities with label: $label"
     for type in 'service' 'secret' 'volume' 'network' 'config'
     do
         dockerutil::print_arrow "removing ${type}s"
-        entities=$(docker $type ls -qf "label=$label")
-        if [ -n "$entities" ]; then
-            docker $type ls -qf "label=$label" | xargs docker $type rm
+        set +e
+        tries=0
+        until [ $tries -ge 5 ]
+        do
+            tries=$[$tries+1]
+            dockerutil::remove_entities_with_label "$type" "$label" && break
             sleep $sleep_time
-        fi
+        done
+        set -e
     done
-}
 
-function dockerutil::remove_entity() {
-    local type=$1
-    local id=$2
 }
 
 #######################################
