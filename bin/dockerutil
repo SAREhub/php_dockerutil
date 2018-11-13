@@ -127,8 +127,8 @@ function dockerutil::clean_all_with_label() {
         until [ $tries -ge 5 ]
         do
             tries=$[$tries+1]
-            dockerutil::remove_entities_with_label "$type" "$label" && break
-            sleep $sleep_time
+            dockerutil::remove_entities_with_label "$type" "$label" && sleep $sleep_time && break
+
         done
         set -e
     done
