@@ -7,6 +7,7 @@ namespace SAREhub\DockerUtil\Worker;
 use Psr\Log\LogLevel;
 use SAREhub\Commons\Logger\StreamLoggerFactoryProvider;
 use SAREhub\Commons\Misc\EnvironmentHelper;
+use SAREhub\Commons\Misc\ErrorHandlerHelper;
 
 abstract class SelectableWorkerBootstrap
 {
@@ -14,10 +15,25 @@ abstract class SelectableWorkerBootstrap
 
     public function run(): void
     {
-        $workerType = strtoupper(EnvironmentHelper::getRequiredVar(self::ENV_WORKER_TYPE));
-        $factoryClass = $this->getWorkerContainerFactoryClassByType($workerType);
-        $errorHandler = $this->createUnexpectedErrorHandler();
-        WorkerBootstrap::create($factoryClass, $errorHandler)->run();
+        $unexpectedErrorHandler = $this->createUnexpectedErrorHandler();
+        $this->registerErrorHandler();
+        try {
+            $workerType = $this->getWorkerType();
+            $factoryClass = $this->getWorkerContainerFactoryClassByType($workerType);
+            WorkerBootstrap::create($factoryClass, $unexpectedErrorHandler)->run();
+        } catch (\Throwable $e) {
+            $unexpectedErrorHandler->handle($e);
+        }
+    }
+
+    protected function registerErrorHandler(): void
+    {
+        ErrorHandlerHelper::registerDefaultErrorHandler(E_ERROR | E_WARNING | E_PARSE | E_NOTICE);
+    }
+
+    protected function getWorkerType(): string
+    {
+        return strtoupper(EnvironmentHelper::getRequiredVar(self::ENV_WORKER_TYPE));
     }
 
     protected abstract function getWorkerContainerFactoryClassByType(string $type): string;
